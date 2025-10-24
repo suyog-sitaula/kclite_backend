@@ -59,6 +59,8 @@ class Contacts(models.Model):
     contact_number = models.CharField(max_length=15)
     email = models.EmailField(null=True, blank=True)
     business = models.CharField(max_length=100, null=True, blank=True)
-    
+    #commnets
     def __str__(self):
         return f"{self.contact_name} - {self.contact_number}"
+    
+    
