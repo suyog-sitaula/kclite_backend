@@ -46,7 +46,7 @@ class Logs(models.Model):
     number_id = models.ForeignKey(NumberDetails, on_delete=models.CASCADE)
     action_type = models.CharField(max_length=100)
     destination_number = models.CharField(max_length=15)
-    source_number = models.CharField(max_length=15)
+    source_number = models.CharField(max_length=15) 
     duration_seconds = models.IntegerField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -59,8 +59,6 @@ class Contacts(models.Model):
     contact_number = models.CharField(max_length=15)
     email = models.EmailField(null=True, blank=True)
     business = models.CharField(max_length=100, null=True, blank=True)
-    #commnets
+    
     def __str__(self):
         return f"{self.contact_name} - {self.contact_number}"
-    
-    
