@@ -11,10 +11,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env(
+    # set casting, defaults
+    DEBUG=(bool, False),
+    DIDWW_API_SANDBOX=(bool, False),
+)
+# read .env file
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+SECRET_KEY = env("SECRET_KEY", default="fallback-secret-key")
+DEBUG = env("DEBUG")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -119,3 +130,41 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+BASE_URL = env("BASE_URL")
+
+REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
+
+
+# Twilio credentials
+TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
+TWILIO_API_KEY = env("TWILIO_API_KEY")
+TWILIO_API_SECRET = env("TWILIO_API_SECRET")
+TWIML_APP_SID = env("TWIML_APP_SID")
+TWILIO_STATUS_CALLBACK_URL = f"{BASE_URL}/api/telecom/twilio/status/"
+TWILIO_DIDWW_BYOC_SID = env("TWILIO_DIDWW_BYOC_SID")
+TWILIO_DEFAULT_CALLER_ID = env("TWILIO_DEFAULT_CALLER_ID")
+TWILIO_VERIFY_SERVICE_SID = env("TWILIO_VERIFY_SERVICE_SID")
+TWILIO_VALIDATION_FROM_NUMBER = env("TWILIO_VALIDATION_FROM_NUMBER")
+
+
+# DIDWW credentials
+DID_BASE_URL = env("DIDWW_BASE_URL")
+DIDWW_API_URL = "https://api.didww.com/v3"
+DIDWW_API_KEY = env("DIDWW_API_KEY")
+DIDWW_API_SANDBOX = env("DIDWW_API_SANDBOX")
+DIDWW_SMS_TRUNK_USERNAME = env("DIDWW_SMS_TRUNK_USERNAME")
+DIDWW_SMS_TRUNK_PASSWORD = env("DIDWW_SMS_TRUNK_PASSWORD")
+DIDWW_SMS_TRUNK_HOST = env("DIDWW_SMS_TRUNK_HOST")
+
+# in-memory channel layer
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
+
+
+# Tell Django "hey, use my Channels stack in asgi.py"
+ASGI_APPLICATION = "mysite.asgi.application"
