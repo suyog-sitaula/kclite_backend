@@ -10,8 +10,8 @@ class twilioService:
     def verifyNumber(self, number):
         validation_request = self.client.validation_requests.create(
         friendly_name="Third Party VOIP Number",
-        phone_number="+14158675310",
-        status_callback="https://somefunction.twil.io/caller-id-validation-callback",
+        phone_number=number,
+        status_callback="https://2ad387984f1d.ngrok-free.app/kclite/verification_status/",
         )
         print(validation_request.account_sid)
         return validation_request.sid

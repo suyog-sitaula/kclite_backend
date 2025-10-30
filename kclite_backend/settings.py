@@ -30,7 +30,7 @@ DEBUG = env("DEBUG")
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1$*(qd!*_kro40s%_o%$438_7x+ln5@7pz$7vo9=(29!l+#j#0'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -172,4 +172,4 @@ CHANNEL_LAYERS = {
 
 
 # Tell Django "hey, use my Channels stack in asgi.py"
-ASGI_APPLICATION = "mysite.asgi.application"
+ASGI_APPLICATION = "kclite_backend.asgi.application"
