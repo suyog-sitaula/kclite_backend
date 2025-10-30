@@ -7,16 +7,18 @@ class DIDWWService:
     def __init__(self):
         self.client = DidwwClient()
 
-    def new_number(self, urn, country_code, group_type, quantity=1):
+    def buy_new_number(self, urn,number):
         try:
-            twilioService.verifyNumber(urn)
-            return self.client.buy_number(did_id= urn)
+            bought_id = self.client.buy_number(did_id= urn)
+            twilio_service = twilioService(number)
+            twilio_service.verifyNumber(urn)
+            return bought_id
         except DidwwAPIError as e:
             print(f"Error purchasing number: {e}")
             return None 
     def getAllNumbers(self):
         try:
-            numbers = self.client.list_available_dids(country="MX")
+            numbers = self.client.list_available_dids(country="US")
             return numbers
         except DidwwAPIError as e:
             print(f"Error retrieving numbers: {e}")

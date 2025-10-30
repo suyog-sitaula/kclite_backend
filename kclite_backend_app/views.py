@@ -9,17 +9,28 @@ def index(self, request):
 def selectedNumber(request, number):
 
     return render(request, 'selectnumber.html')
-class NewNumberView(APIView):
+class BuyNumberView(APIView):
     def get (self, request):
-        number = request.query_params.get('number')
+        uuid = request.query_params.get('uuid')
+        didww_service = DIDWWService()
+        purchased_number = didww_service.buy_new_number(urn=uuid)
         
 class AllNewNumberView(APIView):
     def get(self, request):
-        didwwService = DIDWWService()
-        all_numbers = didwwService.getAllNumbers()
-        return Response(all_numbers)
+        numbers_with_uuids = []
+        didww_service = DIDWWService()
+        all_numbers = didww_service.getAllNumbers()
+        for number in all_numbers:
+            numbers_with_uuids.append({
+                "id": number["id"],
+                "number": number["attributes"]["number"]
+            })
+        return Response(numbers_with_uuids)
 
-    
+class VerificationCompletion(APIView):
+    def post(self, request):
+        verification_status = request.data.get('VerificationStatus')
+        return Response({"status": verification_status})
 def inboundingCall(request):
     return render(request, 'inbounding.html')
 
