@@ -25,6 +25,7 @@ class Users(models.Model):
 class NumberDetails(models.Model):
     user_id = models.ForeignKey(Users, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15)
+    did_uuid = models.CharField(max_length=100)
     expiry_date = models.DateField()
     purchase_date = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=50)

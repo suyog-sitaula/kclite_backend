@@ -8,14 +8,12 @@ class DidwwClient:
     """
 
     def __init__(self):
+        self.base_url = "https://api.didww.com/v3"
         self.headers = {
             "Accept": "application/vnd.api+json",
             "Content-Type": "application/vnd.api+json",
             "Api-Key": settings.DIDWW_API_KEY,
         }
-        sandbox = getattr(settings, "DIDWW_API_SANDBOX", False)
-        base = "https://sandbox-api.didww.com/v3" if sandbox else settings.DIDWW_API_URL
-        self.base_url = base.rstrip("/")
 
     def list_available_dids(self, country=None, group=None, filters=None):
         """
