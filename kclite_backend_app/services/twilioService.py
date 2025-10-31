@@ -14,6 +14,7 @@ class twilioService:
         status_callback="https://2ad387984f1d.ngrok-free.app/kclite/verification_status/",
         )
         print(validation_request.account_sid)
+        
         return validation_request.sid
 
 

@@ -6,9 +6,6 @@ from rest_framework.views import APIView
 def index(self, request):
     return render(request, 'home.html')  
 
-def selectedNumber(request, number):
-
-    return render(request, 'selectnumber.html')
 class BuyNumberView(APIView):
     def get (self, request):
         uuid = request.query_params.get('uuid')
@@ -31,6 +28,7 @@ class VerificationCompletion(APIView):
     def post(self, request):
         verification_status = request.data.get('VerificationStatus')
         return Response({"status": verification_status})
+    
 def inboundingCall(request):
     return render(request, 'inbounding.html')
 
