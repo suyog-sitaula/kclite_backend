@@ -1,6 +1,7 @@
 from twilio.rest import Client
 import os
-
+from util.redis_client import redis_client
+import json
 class twilioService:
     def __init__(self):
         account_sid = os.environ["TWILIO_ACCOUNT_SID"]
@@ -14,7 +15,8 @@ class twilioService:
         status_callback="https://2ad387984f1d.ngrok-free.app/kclite/verification_status/",
         )
         print(validation_request.account_sid)
-        
+        redis_client.set(f"validation_{number}", json.dumps({
+            "validation_code": validation_request.validation_code}))
         return validation_request.sid
 
 

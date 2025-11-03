@@ -38,13 +38,9 @@ from __future__ import annotations
 
 import os
 from typing import Optional
-
+import json
 from twilio.rest import Client
-import redis
-
-# --- Redis setup ------------------------------------------------------------
-_redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-r = redis.from_url(_redis_url, decode_responses=True)
+from util.redis_client import redis_client
 
 # --- Twilio client ----------------------------------------------------------
 _account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
@@ -64,14 +60,15 @@ _BYOC_TRUNK_SID = os.environ.get("TWILIO_BYOC_TRUNK_SID")  # optional
 
 # --- Helpers ---------------------------------------------------------------
 
-def _get_code_from_redis(key: str) -> str:
+def _get_code_from_redis(number) -> str:
     """Return the verification code string stored at `key` in Redis.
     Raises KeyError if missing.
     """
-    val = r.get(key)
-    if val is None:
-        raise KeyError(f"No code found in Redis for key: {key}")
-    return str(val).strip()
+    data = json.loads(redis_client.get(f"validation_{number}"))
+    code = data["validation_code"]
+    if code is None:
+        raise KeyError(f"No code found in Redis for key: validation_{number}")
+    return str(code).strip()
 
 
 def _build_digits_sequence(code: str, pre_wait_seconds: float = 3.0, append_hash: bool = True) -> str:
@@ -110,6 +107,12 @@ def _twiml_for_digits(digits: str) -> str:
 
 # --- Public API ------------------------------------------------------------
 
+
+#this is for outbounding and we need ti inbound the call and tell the code so this wont work
+
+#instead we will store the code in redis when we buy the number and when the call comes in we will fetch the code from redis and send the dtmf
+
+# we need to modify the view that takes the call and if there is no verification code just calls the number and if there is a code it sends the dtmf
 def call_and_send_dtmf(
     to_number: str,
     redis_key: str,
