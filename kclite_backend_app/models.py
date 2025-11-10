@@ -41,7 +41,7 @@ class BillingInfo(models.Model):
     cvv = models.CharField(max_length=4)
 
     def __str__(self):
-        return f"Billing Info for {self.user.username}"
+        return f"Billing Info for {self.user.username}" 
     
 class Logs(models.Model):
     number_id = models.ForeignKey(NumberDetails, on_delete=models.CASCADE)
