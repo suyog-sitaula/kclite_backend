@@ -29,6 +29,9 @@ class VerificationCompletion(APIView):
         verification_status = request.data.get('VerificationStatus')
         return Response({"status": verification_status})
     
+# twilio webhook
+
+
 def inboundingCall(request):
     return render(request, 'inbounding.html')
 
