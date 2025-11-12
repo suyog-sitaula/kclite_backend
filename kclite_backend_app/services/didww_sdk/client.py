@@ -41,7 +41,7 @@ class DidwwClient:
           "rx_dtmf_format_id": 1,
           "tx_dtmf_format_id": 1,
           "resolve_ruri": "true",
-          "auth_enabled": true,
+          "auth_enabled": True,
           "auth_user": "username",
           "auth_password": "password",
           "auth_from_user": "Office",
