@@ -15,6 +15,108 @@ class DidwwClient:
             "Api-Key": settings.DIDWW_API_KEY,
         }
 
+    def inbound_trunks(self,username,sip_domain_host):
+        url = f"{self.base_url}/voice_in_trunks"
+        payload = {
+            "data": {
+    "type": "voice_in_trunks",
+    "attributes": {
+      "priority": "1",
+      "weight": "2",
+      "capacity_limit": 10,
+      "ringing_timeout": 30,
+      "name": "Office",
+      "cli_format": "e164",
+      "cli_prefix": "+",
+      "description": "custom description",
+      "configuration": {
+        "type": "sip_configurations",
+        "attributes": {
+          "username": username,
+          "host": sip_domain_host,
+          "codec_ids": [
+            9,
+            7
+          ],
+          "rx_dtmf_format_id": 1,
+          "tx_dtmf_format_id": 1,
+          "resolve_ruri": "true",
+          "auth_enabled": true,
+          "auth_user": "username",
+          "auth_password": "password",
+          "auth_from_user": "Office",
+          "auth_from_domain": "example.com",
+          "sst_enabled": "false",
+          "sst_min_timer": 600,
+          "sst_max_timer": 900,
+          "sst_refresh_method_id": 1,
+          "sst_accept_501": "true",
+          "sip_timer_b": 8000,
+          "dns_srv_failover_timer": 2000,
+          "rtp_ping": "false",
+          "rtp_timeout": 30,
+          "force_symmetric_rtp": "false",
+          "symmetric_rtp_ignore_rtcp": "false",
+          "rerouting_disconnect_code_ids": [
+            58,
+            59
+          ],
+          "port": 5060,
+          "transport_protocol_id": 2,
+          "max_transfers": 0,
+          "max_30x_redirects": 0,
+          "media_encryption_mode": "disabled",
+          "stir_shaken_mode": "disabled",
+          "allowed_rtp_ips": None
+        }
+      }
+    }
+  }
+        }
+        return _request("POST", url, headers=self.headers, json=payload)
+    
+    def outbound_trunks(self):
+        url = f"{self.base_url}/voice_out_trunks"
+        payload = {
+            "data": {
+    "type": "voice_out_trunks",
+    "attributes": {
+      "name": "Outbound trunk 11",
+      "allowed_sip_ips": settings.DIDWW_ALLOWED_SIP_ADDRESS,
+      "on_cli_mismatch_action": "send_original_cli",
+      "capacity_limit": 100,
+      "allow_any_did_as_cli": True,
+      "status": "active",
+      "threshold_amount": "9999.0",
+      "default_dst_action": "allow_all",
+      "dst_prefixes": ["23"],
+      "media_encryption_mode": "disabled",
+      "allowed_rtp_ips": settings.DIDWW_ALLOWED_RTP_ADDRESS,
+      "force_symmetric_rtp": False,
+      "rtp_ping": False
+    }
+  }
+        }
+        return _request("POST", url, headers=self.headers, json=payload)
+
+    def attach_number_to_trunk(self,number_id,trunk_id):
+        url = f"{self.base_url}/dids/{number_id}"
+        payload = {
+            "data": {
+                "id": number_id,
+                "type": "dids",
+               "relationships": {
+      "voice_in_trunk": {
+        "data": {
+          "type": "voice_in_trunks",
+          "id": trunk_id
+        }
+      }
+    }
+            }
+        }
+        return _request("PATCH", url, headers=self.headers, json=payload)
+
     def list_available_dids(self, country=None, group=None, filters=None):
         """
         Returns a list of available DID numbers (strings) for the given country code.
