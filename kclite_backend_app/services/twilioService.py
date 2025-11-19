@@ -27,21 +27,21 @@ class twilioService:
         print(validation_request.account_sid)
         redis_client.set(f"validation_{number}", json.dumps({
             "validation_code": validation_request.validation_code}))
-        return validation_request.sid
+        return {"success": True, "data": validation_request.sid}
 
     def createNewTrunk(self,connection_policy_sid):
         byoc_trunk = self.client.voice.v1.byoc_trunks.create(
             friendly_name="KCLite User BYOC Trunk",
             ConnectionPolicySid=connection_policy_sid
         )
-        return byoc_trunk.sid
+        return {"success": True, "data": byoc_trunk.sid}
     
     def sipDomain(self, sip_domain,byoc_trunk_sid):
         sip_credential_list = self.client.sip.domains.create(
             domain_name=sip_domain,
             byoc_trunk_sid= byoc_trunk_sid
         )
-        return sip_credential_list.sid
+        return {"success": True, "data": sip_credential_list.sid}
     
     def originationConnectionPolicy(self, sub_account_sid=None):
         if sub_account_sid:
@@ -49,17 +49,17 @@ class twilioService:
             origination_connection_policy = sub_client.voice.v1.byoc_trunks
         else:
             print("No sub account found for this user")
-        return origination_connection_policy.sid
+        return {"success": True, "data": origination_connection_policy}
     
     def addIPToACL(self, acl_sid, ip_address):
         ip_address_obj = self.client.trunking.v1.ip_access_control_lists(acl_sid).ip_addresses.create(
             friendly_name="KCLite User IP Address",
             ip_address=ip_address
         )
-        return ip_address_obj.sid
+        return {"success": True, "data": ip_address_obj.sid}
     
     def ipAccessControlList(self, trunk_sid, friendly_name="KCLite ACL"):
         acl = self.client.trunking.v1.trunks(trunk_sid).ip_access_control_lists.create(
             friendly_name=friendly_name
         )
-        return acl.sid
+        return {"success": True, "data": acl.sid}
