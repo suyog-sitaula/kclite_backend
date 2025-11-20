@@ -93,6 +93,7 @@ class DidwwClient:
         }
       }
     }}}
+        return _request("PATCH", url, headers=self.headers, json=payload)
         
     def create_outbound_trunks(self):
         url = f"{self.base_url}/voice_out_trunks"

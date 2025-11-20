@@ -33,9 +33,9 @@ class DIDWWService:
             print(f"Error retrieving numbers: {e}")
             return {"success": False, "error": str(e)}
     
-    def createInboundTrunk(self):
+    def createInboundTrunk(self,username,sip_domain_host):
         try:
-            inbound_response = self.client.create_inbound_trunks()
+            inbound_response = self.client.create_inbound_trunks(username,sip_domain_host)
             return {"success":True,"inbound_trunk_id": inbound_response.data.id, "sip_uri": inbound_response.data.attributes.sip_uri}
         except DidwwAPIError as e:
             print(f"Error creating inbound trunk: {e}")
@@ -49,13 +49,14 @@ class DIDWWService:
             print(f"Error creating outbound trunk: {e}")
             return {"success": False, "error": str(e)}
 
-    def update_inboundTrunk(self, outbound_trunk_id, sip_domain_host,username,password):
+    def update_inboundTrunk(self, inbound_trunk_id, sip_domain_host,username,password):
         try:
-            update_response = self.client.update_inbound_trunk(outbound_trunk_id, sip_domain_host,username,password)
+            update_response = self.client.update_inbound_trunk(inbound_trunk_id, sip_domain_host,username,password)
             return {"success":True,"update_response_id": update_response.data.id}
         except DidwwAPIError as e:
             print(f"Error updating inbound trunk: {e}")
             return {"success": False, "error": str(e)}
+        
     def attachNumberToTrunk(self):
         try:
             attach_response = self.client.attach_number_to_trunk()

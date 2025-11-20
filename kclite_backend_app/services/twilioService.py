@@ -1,8 +1,8 @@
 from twilio.rest import Client
 import os
-from util.redis_client import redis_client
+from ..util.redis_client import redis_client
 import json
-from util.twilio_client import TwilioClient
+from ..util.twilio_client import TwilioClient
 class CreateTwilioSubAccount:
     def subAccount(friendly_name):
         client = TwilioClient.get_client()
@@ -18,11 +18,15 @@ class twilioService:
             self.sub_account_sid = subAccountClass.subAccount("KCLite User Sub Account")
         self.sub_client = self.client.api.v2010.accounts(self.sub_account_sid)
 
+    def getSubAccountDetails(self):
+        sub_sid = self.sub_client.fetch().sid
+        return {"success": True, "data": sub_sid}
+    
     def verifyNumber(self, number):
         validation_request = self.client.validation_requests.create(
         friendly_name="Third Party VOIP Number",
         phone_number=number,
-        status_callback="https://2ad387984f1d.ngrok-free.app/kclite/verification_status/",
+        status_callback="https://6b5c1cc01596.ngrok-free.app/kclite/verification_status/",
         )
         print(validation_request.account_sid)
         redis_client.set(f"validation_{number}", json.dumps({
