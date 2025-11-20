@@ -32,7 +32,7 @@ DEBUG = env("DEBUG")
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -162,6 +162,8 @@ DIDWW_API_SANDBOX = env("DIDWW_API_SANDBOX")
 DIDWW_SMS_TRUNK_USERNAME = env("DIDWW_SMS_TRUNK_USERNAME")
 DIDWW_SMS_TRUNK_PASSWORD = env("DIDWW_SMS_TRUNK_PASSWORD")
 DIDWW_SMS_TRUNK_HOST = env("DIDWW_SMS_TRUNK_HOST")
+DIDWW_ALLOWED_RTP_ADDRESS = env.list("IP_ADDRESSES", default=[])
+DIDWW_ALLOWED_SIP_ADDRESS = env.list("DIDWW_SIP_IP_ADDRESS", default=[])
 
 # in-memory channel layer
 CHANNEL_LAYERS = {
@@ -169,6 +171,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     }
 }
+
 
 
 # Tell Django "hey, use my Channels stack in asgi.py"
