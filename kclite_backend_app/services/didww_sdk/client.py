@@ -15,7 +15,7 @@ class DidwwClient:
             "Api-Key": settings.DIDWW_API_KEY,
         }
 
-    def inbound_trunks(self,username,sip_domain_host):
+    def create_inbound_trunks(self,username,sip_domain_host):
         url = f"{self.base_url}/voice_in_trunks"
         payload = {
             "data": {
@@ -75,7 +75,27 @@ class DidwwClient:
         }
         return _request("POST", url, headers=self.headers, json=payload)
     
-    def outbound_trunks(self):
+    def update_inbound_trunk(self, inbound_trunk_id, sip_domain_host,username,password):
+        url = f"{self.base_url}/voice_in_trunks/{inbound_trunk_id}"
+        payload = {
+            "data": {
+    "id": inbound_trunk_id,
+    "type": "voice_in_trunks",
+    "attributes": {
+      "configuration": {
+        "type": "sip_configurations",
+        "attributes": {
+          "username": username,
+          "host": sip_domain_host,
+          "auth_enabled": True,
+          "auth_user": username,
+          "auth_password": password
+        }
+      }
+    }}}
+        return _request("PATCH", url, headers=self.headers, json=payload)
+        
+    def create_outbound_trunks(self):
         url = f"{self.base_url}/voice_out_trunks"
         payload = {
             "data": {

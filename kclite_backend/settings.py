@@ -34,7 +34,7 @@ DEBUG = env("DEBUG")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -138,8 +138,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 BASE_URL = env("BASE_URL")
 
-REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
-
+REDIS_URL = env("REDIS_URL", default="redis://yAco1mOwrPst20wVrv6DE40xbmF0rY9BLCTapvOGoxlpGsFtCwYpwibHJeA6UgA3@localhost:6379/0")
+REDIS_PORT = env("REDIS_PORT", default=6379)
 
 # Twilio credentials
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")

@@ -7,7 +7,7 @@ class DIDWWService:
     def __init__(self):
         self.client = DidwwClient()
 
-    def buy_new_number(self, urn,number):
+    def buyNewNumber(self, urn,number):
         try:
             bought_id = self.client.buy_number(did_id= urn)
             twilio_service = twilioService(number)
@@ -16,6 +16,7 @@ class DIDWWService:
         except DidwwAPIError as e:
             print(f"Error purchasing number: {e}")
             return {"success": False, "error": str(e)}
+        
     def getAllNumbers(self):
         try:
             numbers = self.client.list_available_dids(country="US")
@@ -23,6 +24,7 @@ class DIDWWService:
         except DidwwAPIError as e:
             print(f"Error retrieving numbers: {e}")
             return {"success": False, "error": str(e)}
+        
     def getExistingNumbers(self):
         try:
             numbers = Models.NumberDetails.objects.all()
@@ -31,22 +33,30 @@ class DIDWWService:
             print(f"Error retrieving numbers: {e}")
             return {"success": False, "error": str(e)}
     
-    def inboundTrunk(self):
+    def createInboundTrunk(self,username,sip_domain_host):
         try:
-            inbound_response = self.client.inbound_trunks()
+            inbound_response = self.client.create_inbound_trunks(username,sip_domain_host)
             return {"success":True,"inbound_trunk_id": inbound_response.data.id, "sip_uri": inbound_response.data.attributes.sip_uri}
         except DidwwAPIError as e:
             print(f"Error creating inbound trunk: {e}")
             return {"success": False, "error": str(e)}
 
-    def outboundTrunk(self):
+    def createOutboundTrunk(self):
         try:
-            outbound_response = self.client.outbound_trunks()
+            outbound_response = self.client.create_outbound_trunks()
             return {"success":True,"outbound_trunk_id": outbound_response.data.id}
         except DidwwAPIError as e:
             print(f"Error creating outbound trunk: {e}")
             return {"success": False, "error": str(e)}
 
+    def update_inboundTrunk(self, inbound_trunk_id, sip_domain_host,username,password):
+        try:
+            update_response = self.client.update_inbound_trunk(inbound_trunk_id, sip_domain_host,username,password)
+            return {"success":True,"update_response_id": update_response.data.id}
+        except DidwwAPIError as e:
+            print(f"Error updating inbound trunk: {e}")
+            return {"success": False, "error": str(e)}
+        
     def attachNumberToTrunk(self):
         try:
             attach_response = self.client.attach_number_to_trunk()
