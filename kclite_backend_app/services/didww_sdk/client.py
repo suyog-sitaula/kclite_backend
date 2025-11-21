@@ -8,12 +8,15 @@ class DidwwClient:
     """
 
     def __init__(self):
-        self.base_url = "https://api.didww.com/v3"
-        self.headers = {
-            "Accept": "application/vnd.api+json",
-            "Content-Type": "application/vnd.api+json",
-            "Api-Key": settings.DIDWW_API_KEY,
-        }
+        try:    
+            self.base_url = "https://api.didww.com/v3"
+            self.headers = {
+                "Accept": "application/vnd.api+json",
+                "Content-Type": "application/vnd.api+json",
+                "Api-Key": settings.DIDWW_API_KEY,
+            }
+        except Exception as e:
+            raise Exception(f"Error initializing DIDWW client: {e}")
 
     def create_inbound_trunks(self,username,sip_domain_host):
         url = f"{self.base_url}/voice_in_trunks"

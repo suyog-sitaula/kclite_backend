@@ -3,31 +3,67 @@ from ..services.didwwService import DIDWWService
 from ..services.twilioService import twilioService
 class NumberPurchaseController:
     def __init__(self):
-        self.didww_service = DIDWWService()
-        self.twilio_service = twilioService()
+        try:
+            self.didww_service = DIDWWService()
+            self.twilio_service = twilioService()
+        except Exception as e:
+            raise Exception(f"Error initializing services: {e}")
         
     def numberPurchaseFlow(self, urn, number,username,sip_domain_host):
-        result = self.didww_service.buyNewNumber(urn)
-        inbound_trunk = self.didww_service.createInboundTrunk(username,sip_domain_host)
-        outbound_trunk = self.didww_service.createOutboundTrunk()
-        verification = self.twilio_service.verifyNumber(urn)
-        return result
+        try:
+            new_number = self.didww_service.buyNewNumber(urn)
+            number_id = new_number["data"]
+            
+            inbound_trunk = self.didww_service.createInboundTrunk(username,sip_domain_host)
+            inbound_trunk_id = inbound_trunk["inbound_trunk_id"]
+            sip_uri = inbound_trunk["sip_uri"]
+
+            outbound_trunk = self.didww_service.createOutboundTrunk()
+            outbound_trunk_id = outbound_trunk["outbound_trunk_id"]
+
+            verification = self.twilio_service.verifyNumber(urn)
+            verification_sid = verification["data"]
+            
+            return {"first_phase_verification_status": True, "data": {
+                "number_id": number_id,
+                "inbound_trunk_id": inbound_trunk_id,
+                "sip_uri": sip_uri,
+                "outbound_trunk_id": outbound_trunk_id,
+                "verification_sid": verification_sid
+            }}
+        except Exception as e:
+            return {"first_phase_verification_status": False, "error": str(e)}
     
     def twilioAccountCreationAndTrunkSetup(self, sip_domain, ip_address):
-        sub_account = self.twilio_service.getSubAccountDetails()
-        origination_policy = self.twilio_service.originationConnectionPolicy(sub_account)
-        byoc_trunk = self.twilio_service.createNewTrunk(origination_policy)
-        sip_domain_obj = self.twilio_service.sipDomain(sip_domain, byoc_trunk)
-        acl = self.twilio_service.ipAccessControlList(byoc_trunk)
-        acl_ip = self.twilio_service.addIPToACL(sip_domain_obj, ip_address)
-        return {"success": True, "data": {
-            "sub_account_sid": sub_account,
-            "byoc_trunk_sid": byoc_trunk,
-            "sip_domain_sid": sip_domain_obj,
-            "acl_ip_sid": acl_ip
-        }}
+        try:
+            sub_account = self.twilio_service.getSubAccountDetails()
+            sub_account_sid = sub_account["data"]
+            origination_policy = self.twilio_service.originationConnectionPolicy(sub_account_sid)
+            #correct the origination poilcy in the twilioService
+            byoc_trunk = self.twilio_service.createNewTrunk(origination_policy)
+            byoc_sid = byoc_trunk["data"]
+            
+            sip_domain_obj = self.twilio_service.sipDomain(sip_domain, byoc_sid)
+            sip_domain_sid = sip_domain_obj["data"]
+            
+            acl = self.twilio_service.ipAccessControlList(byoc_trunk)
+            acl_sid = acl["data"]
+            
+            acl_ip = self.twilio_service.addIPToACL(acl_sid, ip_address)
+            acl_ip_sid = acl_ip["data"]
+            
+            return {"success": True, "data": {
+                "sub_account_sid": sub_account_sid,
+                "byoc_trunk_sid": byoc_sid,
+                "sip_domain": sip_domain,
+                "sip_domain_sid": sip_domain_sid,
+                "acl_ip_sid": acl_ip_sid
+            }}
+        except Exception as e:
+            raise Exception(f"Error in Twilio account creation and trunk setup: {e}")
         
-    def numberPurchaseFlowAfterVerification(self, urn, number,username,password):
-        update_inbound = self.didww_service.update_inboundTrunk(urn, sip_domain_host,username,password)
+    def numberPurchaseFlowAfterVerification(self, sip_domain, urn, number,username,password):
+        twili_setup = self.twilioAccountCreationAndTrunkSetup(sip_domain=sip_domain, ip_address=number.ip_address)
+        update_inbound = self.didww_service.update_inboundTrunk(urn, sip_domain,username,password)
         attach_number = self.didww_service.attachNumberToTrunk()
         return {"success": True, "data": "Number purchase and trunk setup completed."}
