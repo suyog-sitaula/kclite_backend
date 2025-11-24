@@ -27,6 +27,7 @@ class NumberPurchaseController:
             return {"first_phase_verification_status": True, "data": {
                 "number_id": number_id,
                 "inbound_trunk_id": inbound_trunk_id,
+                "number":number,
                 "sip_uri": sip_uri,
                 "outbound_trunk_id": outbound_trunk_id,
                 "verification_sid": verification_sid
@@ -38,9 +39,11 @@ class NumberPurchaseController:
         try:
             sub_account = self.twilio_service.getSubAccountDetails()
             sub_account_sid = sub_account["data"]
+            
             origination_policy = self.twilio_service.originationConnectionPolicy(sub_account_sid)
-            #correct the origination poilcy in the twilioService
-            byoc_trunk = self.twilio_service.createNewTrunk(origination_policy)
+            origination_policy_sid = origination_policy["data"]
+            
+            byoc_trunk = self.twilio_service.createNewTrunk(origination_policy_sid)
             byoc_sid = byoc_trunk["data"]
             
             sip_domain_obj = self.twilio_service.sipDomain(sip_domain, byoc_sid)

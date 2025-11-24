@@ -66,7 +66,7 @@ class twilioService:
         try:
             if sub_account_sid:
                 sub_client = self.client.api.v2010.accounts(sub_account_sid)
-                origination_connection_policy = sub_client.voice.v1.byoc_trunks
+                origination_connection_policy = sub_client.voice.v1.connection_policies.create()
             else:
                 raise Exception("Error finding the sub account for this user.")
             return {"success": True, "data": origination_connection_policy}
