@@ -3,13 +3,10 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from .services.didwwService import DIDWWService
 from rest_framework.views import APIView
-# Create your views here.
-def index(self, request):
-    return render(request, 'home.html')  
 
 class BuyNumberView(APIView):
     def get (self, request):
-        uuid = request.query_params.get('uuid')
+        uuid = request.GET.get('uuid')
         didww_service = DIDWWService()
         purchased_number = didww_service.buy_new_number(urn=uuid)
         
@@ -27,31 +24,48 @@ class AllNewNumberView(APIView):
 
 class VerificationCompletion(APIView):
     def post(self, request):
-        verification_status = request.data.get('VerificationStatus')
-        return Response({"status": verification_status})
+        call_sid = request.POST.get('CallSid')
+        call_status = request.POST.get('CallStatus')
+        verification_status = request.POST.get('VerificationStatus')
+        
+        if call_status == "completed" and verification_status == "approved":
+            npc = NumberPurchaseController()
+            sip_domain = request.POST.get('sip_domain')
+            urn = request.POST.get('urn')
+            number = request.POST.get('number')
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            final_setup = npc.twilioAccountCreationAndTrunkSetup(sip_domain,urn,number,username,password)
+        return Response({"status": final_setup["success"], "data": final_setup["data"]})
     
 # twilio webhook
 class FirstPhaseTrunkSetupView(APIView):
+    def __init__(self):
+        self.npc = NumberPurchaseController()
     def post(self, request):
-        sip_domain = request.data.get('sip_domain')
-        urn = request.data.get('urn')
-        number = request.data.get('number')
-        username = request.data.get('username')
+        sip_domain = request.POST.get('sip_domain')
+        urn = request.POST.get('urn')
+        number = request.POST.get('number')
+        username = request.POST.get('username')
         
-        npc = NumberPurchaseController()
-        first_phase_response = npc.numberPurchaseFlow(urn, number,username,sip_domain)
+        first_phase_response = self.npc.numberPurchaseFlow(urn, number,username,sip_domain)
         
-        if first_phase_response["first_phase_verification_status"]:
-            second_phase_response = npc.numberPurchaseFlowAfterVerification(sip_domain, urn, number,username)
-            return Response(second_phase_response)
-        else:
-            return Response({"success": False, "error": "First phase verification failed."})
+        return Response(first_phase_response)
+    
+class InboundingCallView(APIView):
+    def post(self, request):
+        pass
+class outboundingCallView(APIView):
+    def post(self, request):
+        to_number = request.POST.get("To")
 
-def inboundingCall(request):
-    return render(request, 'inbounding.html')
+        resp = VoiceResponse()
+        dial = resp.dial(caller_id=settings.TWILIO_CALLER_ID)  # your verified / bought number
+        if to_number:
+            dial.number(to_number)
 
-def outboundingCall(request):
-    return render(request, 'outbounding.html')
+        return request(str(resp), content_type="text/xml")
+
 
 def subscription(request):
     return render(request, 'subscription.html')

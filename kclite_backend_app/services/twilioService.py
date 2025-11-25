@@ -3,6 +3,9 @@ import os
 from ..util.redis_client import redis_client
 import json
 from ..util.twilio_client import TwilioClient
+from twilio.jwt.access_token import AccessToken
+from twilio.jwt.access_token.grants import VoiceGrant
+
 class CreateTwilioSubAccount:
     def subAccount(friendly_name):
         client = TwilioClient.get_client()
@@ -20,6 +23,11 @@ class twilioService:
             self.sub_client = self.client.api.v2010.accounts(self.sub_account_sid)
         except Exception as e:
             raise Exception(f"Error initializing Twilio client: {e}")
+        
+    def createNewKeys(self):
+        #save these keys in database
+            api_key = self.sub_client.newKeys.create(friendly_name="KCLite User API Key")
+            return {"success": True, "data": {"api_key_sid": api_key.sid, "api_key_secret": api_key.secret}}
         
     def getSubAccountDetails(self):
         try:
@@ -73,6 +81,26 @@ class twilioService:
         except Exception as e:
             raise Exception(f"Error creating origination connection policy: {e}")
     
+    def generateToken(self, identity, ttl=3600):
+        try:
+#get everything from database instead of env
+            account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+            api_key_sid = os.getenv("TWILIO_API_KEY_SID")
+            api_key_secret = os.getenv("TWILIO_API_KEY_SECRET")
+            outgoing_application_sid = os.getenv("TWILIO_TWIML_APP_SID")
+            token = AccessToken(account_sid, api_key_sid, api_key_secret, identity=identity, ttl=ttl)
+
+            voice_grant = VoiceGrant(
+                outgoing_application_sid=outgoing_application_sid,
+                incoming_allow=True
+            )
+            token.add_grant(voice_grant)
+            return {"success": True, "data":token.to_jwt()}
+        
+        except Exception as e:
+            raise Exception(f"Error generating token: {e}")
+    
+    #change this both method
     def addIPToACL(self, acl_sid, ip_address):
         try:
             ip_address_obj = self.client.trunking.v1.ip_access_control_lists(acl_sid).ip_addresses.create(
