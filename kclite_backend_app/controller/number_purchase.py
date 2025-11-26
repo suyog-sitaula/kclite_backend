@@ -47,20 +47,14 @@ class NumberPurchaseController:
             byoc_sid = byoc_trunk["data"]
             
             sip_domain_obj = self.twilio_service.sipDomain(sip_domain, byoc_sid)
-            sip_domain_sid = sip_domain_obj["data"]
-            
-            acl = self.twilio_service.ipAccessControlList(byoc_trunk)
-            acl_sid = acl["data"]
-            
-            acl_ip = self.twilio_service.addIPToACL(acl_sid, ip_address)
-            acl_ip_sid = acl_ip["data"]
+            sip_domain_sid = sip_domain_obj["sip_credential_list_sid"]
             
             return {"success": True, "data": {
                 "sub_account_sid": sub_account_sid,
                 "byoc_trunk_sid": byoc_sid,
                 "sip_domain": sip_domain,
                 "sip_domain_sid": sip_domain_sid,
-                "acl_ip_sid": acl_ip_sid
+
             }}
         except Exception as e:
             raise Exception(f"Error in Twilio account creation and trunk setup: {e}")

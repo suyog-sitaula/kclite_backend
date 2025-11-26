@@ -1,5 +1,5 @@
 from rest_framework import serializers  
-from .models import Users, NumberDetails, BillingInfo, Logs, SubscriptionPlans
+from .models import Users, NumberDetails, BillingInfo, Logs, SubscriptionPlans, TelecomProfile, Contacts
 
 class SubscriptionPlansSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,3 +26,12 @@ class LogsSerializer(serializers.ModelSerializer):
         model = Logs
         fields = '__all__'
         
+class TelecomProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TelecomProfile
+        fields = '__all__'
+
+class ContactsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contacts
+        fields = '__all__'
