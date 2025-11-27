@@ -1,14 +1,10 @@
 from django.db import models
 
-
+#bring changes in the model
 class SubscriptionPlans(models.Model):
     plan_name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    duration_days = models.IntegerField()
-    expiry_date = models.DateField()
-    total_credits = models.IntegerField()
-    credits_left = models.IntegerField()
-
+    descripton = models.TextField(blank=True, null=True)
     def __str__(self):
         return self.plan_name
 
@@ -21,7 +17,11 @@ class Users(models.Model):
 
     # Main identifier in your system
     email = models.EmailField(unique=True)
-
+    total_credits = models.IntegerField(default=0)
+    credits_left = models.IntegerField(default=0)
+    duration_days = models.IntegerField()
+    expiry_date = models.DateField()
+    is_active = models.BooleanField(default=True)
     # For leads / display
     full_name = models.CharField(max_length=150, blank=True, null=True)
 
@@ -56,7 +56,7 @@ class TelecomProfile(models.Model):
     """
     user = models.OneToOneField(Users, on_delete=models.CASCADE, related_name="telecom_profile")
 
-    twilio_subaccount_sid = models.CharField(max_length=64, blank=True, null=True)
+    twilio_subaccount_sid = models.CharField(max_length=64, blank=True, null=True, unique=True)
     twilio_api_key_sid = models.CharField(max_length=64, blank=True, null=True)
     twilio_api_key_secret = models.CharField(max_length=128, blank=True, null=True)  # store encrypted!
     twilio_twiml_app_sid = models.CharField(max_length=64, blank=True, null=True)

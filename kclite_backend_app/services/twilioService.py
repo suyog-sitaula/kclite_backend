@@ -1,12 +1,16 @@
 from django.conf import settings
 from twilio.rest import Client
 import os
+
+from kclite_backend_app.serializers import TelecomProfileSerializer
 from ..util.redis_client import redis_client
 import json
 from ..util.twilio_client import TwilioClient
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VoiceGrant
+from models import Users, TelecomProfile
 
+#save the required details in the database using serializer after creating new keys or account 
 class CreateTwilioSubAccount:
     def subAccount(friendly_name):
         client = TwilioClient.get_client()
@@ -111,16 +115,19 @@ class twilioService:
     def createNewKeys(self):
         api_key = self.sub_client.newKeys.create(friendly_name="KCLite User API Key")
         application = self.sub_client.applications.create(friendly_name="Phone Me",)
-        
+        #save in database using serializer
         return {"success": True, "data": {"api_key_sid": api_key.sid, "api_key_secret": api_key.secret, "twiml_app_sid": application.sid}}
     
-    def generateToken(self, identity, ttl=3600):
+    def generateToken(self, identity, user_id,ttl=3600):
         try:
-            account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-            api_key_sid = os.getenv("TWILIO_API_KEY_SID")
-            api_key_secret = os.getenv("TWILIO_API_KEY_SECRET")
-            outgoing_application_sid = os.getenv("TWILIO_TWIML_APP_SID")
-            token = AccessToken(account_sid, api_key_sid, api_key_secret, identity=identity, ttl=ttl)
+            twilio_credentials = TelecomProfile.objects.get(user__id=user_id)
+            serialized_telecom_profile = TelecomProfileSerializer(twilio_credentials)
+            twilio_credentials_data = serialized_telecom_profile.data
+            twilio_api_key_sid = twilio_credentials_data['twilio_api_key_sid']
+            twilio_subaccount_sid = twilio_credentials_data['twilio_subaccount_sid']
+            outgoing_application_sid = twilio_credentials_data['twilio_twiml_app_sid']
+            twilio_api_key_secret = twilio_credentials_data['twilio_api_key_secret']
+            token = AccessToken(twilio_subaccount_sid, twilio_api_key_sid, twilio_api_key_secret, identity=identity, ttl=ttl)
 
             voice_grant = VoiceGrant(
                 outgoing_application_sid=outgoing_application_sid,
