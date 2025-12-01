@@ -8,7 +8,7 @@ import json
 from ..util.twilio_client import TwilioClient
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VoiceGrant
-from models import Users, TelecomProfile
+from ..models import Users, TelecomProfile
 
 #save the required details in the database using serializer after creating new keys or account 
 class CreateTwilioSubAccount:

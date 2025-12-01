@@ -19,8 +19,8 @@ class Users(models.Model):
     email = models.EmailField(unique=True)
     total_credits = models.IntegerField(default=0)
     credits_left = models.IntegerField(default=0)
-    duration_days = models.IntegerField()
-    expiry_date = models.DateField()
+    duration_days = models.IntegerField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     # For leads / display
     full_name = models.CharField(max_length=150, blank=True, null=True)
