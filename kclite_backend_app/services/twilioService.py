@@ -1,8 +1,8 @@
 from django.conf import settings
 from twilio.rest import Client
 import os
-
-from kclite_backend_app.serializers import TelecomProfileSerializer
+from typing import Optional
+from ..serializers import TelecomProfileSerializer
 from ..util.redis_client import redis_client
 import json
 from ..util.twilio_client import TwilioClient
@@ -12,23 +12,35 @@ from ..models import Users, TelecomProfile
 
 #save the required details in the database using serializer after creating new keys or account 
 class CreateTwilioSubAccount:
-    def subAccount(friendly_name):
+    @staticmethod
+    def subAccount(friendly_name: str):
         client = TwilioClient.get_client()
         sub_account = client.api.v2010.accounts.create(friendly_name=friendly_name)
         return sub_account.sid
     
 class twilioService:
-    def __init__(self, user_sub_account_sid=None):
-        try:
-            self.ip_addresses = settings.DIDWW_ALLOWED_RTP_ADDRESS
-            self.client = TwilioClient.get_client()
+    def __init__(self, user_sub_account_sid: Optional[str] = None, auto_create_subaccount: bool = False):
+        """
+        Initialize a Twilio service helper.
+
+        - user_sub_account_sid: if provided, bind this service to that subaccount.
+        - auto_create_subaccount: if True and no SID is provided, create a new subaccount.
+        """
+        self.ip_addresses = getattr(settings, "DIDWW_ALLOWED_RTP_ADDRESS", [])
+        print("IP ADDRESSES:", self.ip_addresses)
+        # Create the main Twilio client (uses env vars / settings via TwilioClient)
+        self.client = TwilioClient.get_client()
+
+        self.sub_account_sid = None
+        self.sub_client = None
+
+        if user_sub_account_sid:
             self.sub_account_sid = user_sub_account_sid
-            if not user_sub_account_sid:
-                subAccountClass = CreateTwilioSubAccount()
-                self.sub_account_sid = subAccountClass.subAccount("KCLite User Sub Account")
+        elif auto_create_subaccount:
+            self.sub_account_sid = CreateTwilioSubAccount.subAccount("KCLite User Sub Account")
+            print(f"Created new subaccount with SID: {self.sub_account_sid}")
+        if self.sub_account_sid:
             self.sub_client = self.client.api.v2010.accounts(self.sub_account_sid)
-        except Exception as e:
-            raise Exception(f"Error initializing Twilio client: {e}")
         
     def getSubAccountDetails(self):
         try:
@@ -61,7 +73,6 @@ class twilioService:
             return {"success": True, "origination_connection_policy_sid": origination_connection_policy.sid}
         except Exception as e:
             raise Exception(f"Error creating origination connection policy: {e}")
-
     
     def createNewTrunk(self,connection_policy_sid):
         try:
@@ -112,21 +123,26 @@ class twilioService:
         except Exception as e:  
             raise Exception(f"Error creating SIP domain: {e}")
     
-    def createNewKeys(self):
+    '''
+    @param user_id: ID of the user for whom to create new keys
+    '''
+    def createNewKeys(user_id,self):
         api_key = self.sub_client.newKeys.create(friendly_name="KCLite User API Key")
-        application = self.sub_client.applications.create(friendly_name="Phone Me",)
+        #in voice url there must be the url for outbounding and when the sdk calls the number this webhook is triggeredq
+        application = self.sub_client.applications.create(voice_method="POST",voice_url="",friendly_name="Phone Me",)
         #save in database using serializer
         return {"success": True, "data": {"api_key_sid": api_key.sid, "api_key_secret": api_key.secret, "twiml_app_sid": application.sid}}
     
-    def generateToken(self, identity, user_id,ttl=3600):
+    def generateToken(self,identity,outgoing_application_sid,twilio_subaccount_sid, twilio_api_key_sid, twilio_api_key_secret, user_id,ttl=3600):
         try:
-            twilio_credentials = TelecomProfile.objects.get(user__id=user_id)
-            serialized_telecom_profile = TelecomProfileSerializer(twilio_credentials)
-            twilio_credentials_data = serialized_telecom_profile.data
-            twilio_api_key_sid = twilio_credentials_data['twilio_api_key_sid']
-            twilio_subaccount_sid = twilio_credentials_data['twilio_subaccount_sid']
-            outgoing_application_sid = twilio_credentials_data['twilio_twiml_app_sid']
-            twilio_api_key_secret = twilio_credentials_data['twilio_api_key_secret']
+            # twilio_credentials = TelecomProfile.objects.get(user__id=user_id)
+            # serialized_telecom_profile = TelecomProfileSerializer(twilio_credentials)
+            # twilio_credentials_data = serialized_telecom_profile.data
+            # twilio_api_key_sid = twilio_credentials_data['twilio_api_key_sid']
+            # twilio_subaccount_sid = twilio_credentials_data['twilio_subaccount_sid']
+            # outgoing_application_sid = twilio_credentials_data['twilio_twiml_app_sid']
+            # twilio_api_key_secret = twilio_credentials_data['twilio_api_key_secret']
+            # identity is apple_sub in user model
             token = AccessToken(twilio_subaccount_sid, twilio_api_key_sid, twilio_api_key_secret, identity=identity, ttl=ttl)
 
             voice_grant = VoiceGrant(
@@ -134,9 +150,11 @@ class twilioService:
                 incoming_allow=True
             )
             token.add_grant(voice_grant)
-            return {"success": True, "token":token.to_jwt()}
+            jwt_value = token.to_jwt()
+            # Twilio may return either bytes or str depending on version
+            if isinstance(jwt_value, bytes):
+                jwt_value = jwt_value.decode("utf-8")
+            return {"success": True, "token": jwt_value}
         
         except Exception as e:
             raise Exception(f"Error generating token: {e}")
-    
-    

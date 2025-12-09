@@ -24,7 +24,7 @@ env = environ.Env(
 # read .env file
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-SECRET_KEY = env("SECRET_KEY", default="fallback-secret-key")
+SECRET_KEY = env("SECRET_KEY", default="django-insecure-1$*(qd!*_kro40s%_o%$438_7x+ln5@7pz$7vo9=(29!l+#j#0")
 DEBUG = env("DEBUG")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -34,7 +34,10 @@ DEBUG = env("DEBUG")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS",
+    default=["127.0.0.1", "localhost"]
+)
 
 
 # Application definition
@@ -153,6 +156,7 @@ TWILIO_DEFAULT_CALLER_ID = env("TWILIO_DEFAULT_CALLER_ID")
 TWILIO_VERIFY_SERVICE_SID = env("TWILIO_VERIFY_SERVICE_SID")
 TWILIO_VALIDATION_FROM_NUMBER = env("TWILIO_VALIDATION_FROM_NUMBER")
 
+JWT_SECRET_KEY = env("JWT_SECRET_KEY")
 
 # DIDWW credentials
 DID_BASE_URL = env("DIDWW_BASE_URL")

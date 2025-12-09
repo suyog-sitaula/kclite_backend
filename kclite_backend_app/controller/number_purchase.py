@@ -58,9 +58,17 @@ class NumberPurchaseController:
             }}
         except Exception as e:
             raise Exception(f"Error in Twilio account creation and trunk setup: {e}")
+    
+    def appCreationAndKeySetup(self, user_id):
+        try:
+            new_keys = self.twilio_service.createNewKeys(user_id)
+            return {"success": True, "data": new_keys["data"]}
+        except Exception as e:
+            raise Exception(f"Error in app creation and key setup: {e}")
         
     def numberPurchaseFlowAfterVerification(self, sip_domain, urn, number,username,password):
         twili_setup = self.twilioAccountCreationAndTrunkSetup(sip_domain=sip_domain, ip_address=number.ip_address)
+        app_creation = self.appCreationAndKeySetup()
         update_inbound = self.didww_service.update_inboundTrunk(urn, sip_domain,username,password)
         attach_number = self.didww_service.attachNumberToTrunk()
         return {"success": True, "data": "Number purchase and trunk setup completed."}

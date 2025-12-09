@@ -1,10 +1,10 @@
 from django.db import models
-
+import uuid
 #bring changes in the model
 class SubscriptionPlans(models.Model):
     plan_name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    descripton = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     def __str__(self):
         return self.plan_name
 
@@ -17,6 +17,7 @@ class Users(models.Model):
 
     # Main identifier in your system
     email = models.EmailField(unique=True)
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     total_credits = models.IntegerField(default=0)
     credits_left = models.IntegerField(default=0)
     duration_days = models.IntegerField(null=True, blank=True)
